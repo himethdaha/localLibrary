@@ -1,8 +1,49 @@
 const Book = require('../models/book')
+const BookInstance = require('../models/bookInstance')
+const Author = require('../models/author')
+const Genre = require('../models/genre')
+
+const async = require('async')
+const bookinstance = require('../models/bookInstance')
 
 //Will be the sites Index page
 exports.index=(req,res)=>{
-    res.send(`Index Page`)
+    async.parallel({
+        //function to get the book counts
+        book_count(callback)
+        {
+            Book.countDocuments({},callback)
+        },
+        //function to get the book instance counts
+        bookInstance_count(callback)
+        {
+            BookInstance.countDocuments({},callback)
+        },
+        //function to get the available book instance counts
+        bookinstance_available_count(callback)
+        {
+            BookInstance.countDocuments({status:"Available"},callback)
+        },
+        //function to get the author counts
+        author_count(callback)
+        {
+            Author.countDocuments({},callback)
+        },
+        //function to get the genre counts
+        genre_count(callback)
+        {
+            Genre.countDocuments({},callback)
+        }
+    },
+        //Ending callback
+        (err,results) =>{
+            res.render('index',{
+                title:'Welcome to the Local Library Home',
+                error:err,
+                data:results
+            })
+        }
+    )
 }
 //Display the list of all books
 exports.book_list=(req,res)=>{
