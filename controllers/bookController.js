@@ -46,8 +46,16 @@ exports.index=(req,res)=>{
     )
 }
 //Display the list of all books
-exports.book_list=(req,res)=>{
-    res.send(`List of all books`)
+exports.book_list=(req,res,next)=>{
+    //Find all books by title and author, then sort alphhabetically and populate the author
+    Book.find({},"title author").sort({title:1}).populate("author").exec((err,list_of_books)=>{
+        //If an error occurs pass it to express 
+        if(err)
+        {
+            next(err)
+        }
+        res.render("bookList",{title:"Book List",book_list:list_of_books})
+    })
 }
 //Display the details of an book
 exports.book_detail=(req,res)=>{
