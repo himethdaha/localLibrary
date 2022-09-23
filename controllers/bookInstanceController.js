@@ -2,6 +2,7 @@ const Book = require('../models/book')
 const BookInstance = require('../models/bookInstance')
 const Author = require('../models/author')
 const Genre = require('../models/genre')
+const book = require('../models/book')
 
 //Display the list of all book instances
 exports.bookInstance_list=(req,res,next)=>{
@@ -19,8 +20,25 @@ exports.bookInstance_list=(req,res,next)=>{
     })
 }
 //Display the details of a bookinstance
-exports.bookInstance_detail=(req,res)=>{
-    res.send(`Details of bookinstance with the ID of ${req.params.id}`)
+exports.bookInstance_detail=(req,res,next)=>{
+    //Find the bookInstance by id and populate the book
+    BookInstance.findById(req.params.id).populate('book').exec((err,bookInstance)=>{
+        if(err)
+        {
+            return next(err)
+        }
+        //If no bookInstances
+        if(bookInstance === null)
+        {
+            const err = new Error(`No book instance to be found`)
+            err.status = 404
+            return next(err)
+        }
+        res.render("bookInstanceDetails",{
+            title:`Copies of ${bookInstance.book.title}`,
+            bookInstance:bookInstance
+        })
+    })
 }
 //Display bookinstance create form
 exports.bookInstance_create_get=(req,res)=>{

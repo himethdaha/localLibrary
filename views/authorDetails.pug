@@ -5,6 +5,9 @@ block content
     h1 Author Details
     h2= title
 
+    if author.lifespan >0 
+        h6 #{title} lived for #{author.lifespan} years
+
     div(style='margin-left:20px;margin-top:20px')
 
         h4 Books 
