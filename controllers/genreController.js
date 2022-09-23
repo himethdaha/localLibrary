@@ -1,5 +1,7 @@
 const Genre = require('../models/genre')
-
+const Book = require('../models/book')
+const async = require('async')
+const mongoose = require('mongoose')
 //Display the list of all genres
 exports.genre_list=(req,res,next)=>{
     Genre.find().sort([['name','ascending']]).exec(function(err,list_of_genres){
@@ -16,7 +18,39 @@ exports.genre_list=(req,res,next)=>{
 }
 //Display the details of a genre
 exports.genre_detail=(req,res)=>{
-    res.send(`Details of genre with the ID of ${req.params.id}`)
+    //kick off finding genre and books based on the id param passed at the same time
+    async.parallel({
+        genre(callback)
+        {
+            Genre.findById(req.params.id).exec(callback)
+        },
+        genre_books(callback)
+        {
+            Book.find({genre:req.params.id}).exec(callback)
+        },
+    },
+    (err,results)=>{
+        //If an error occurs pass it to express
+        if(err)
+        {
+            next(err)
+        }
+        //If no genre was found
+        if(results.genre===null)
+        {
+            //Create an error and pass it to express
+            const err = new Error(`No genre found`)
+            err.status = 404
+            return next(err)
+        }
+        //If genre and books were found
+        res.render('genreDetails',{
+        title: "Genre Details",
+        genre:results.genre,
+        genre_books:results.genre_books,
+    })
+    }
+    )
 }
 //Display genre create form
 exports.genre_create_get=(req,res)=>{
