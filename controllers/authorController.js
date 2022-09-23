@@ -1,4 +1,7 @@
 const Author = require("../models/author")
+const Book = require("../models/book")
+const async = require('async')
+const book = require("../models/book")
 
 //Display the list of all authors
 exports.author_list = (req,res,next)=>{
@@ -16,8 +19,36 @@ exports.author_list = (req,res,next)=>{
     })
 }
 //Display the details of an author
-exports.author_detail=(req,res)=>{
-    res.send(`Details of author with the ID of ${req.params.id}`)
+exports.author_detail=(req,res,next)=>{
+    async.parallel({
+        author(callback){
+            Author.findById(req.params.id).exec(callback)
+        },
+        books(callback){
+            Book.find({author:req.params.id}, "title summary").exec(callback)
+        }
+    },
+    (err,results)=>{
+        //If an error occurs pass the error to express
+        if(err)
+        {
+            return next(err)
+        }
+
+        //If no authors were found
+        if(results.author===null)
+        {
+            const err = new Error(`No authors found`)
+            err.status = 404
+            return next(err) 
+        }
+        res.render('authorDetails',{
+            title:`${results.author.first_name} ${results.author.family_name}`,
+            author:results.author,
+            books:results.books
+        })
+    }
+    )
 }
 //Display author create form
 exports.author_create_get=(req,res)=>{
