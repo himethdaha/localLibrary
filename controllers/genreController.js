@@ -1,8 +1,18 @@
 const Genre = require('../models/genre')
 
 //Display the list of all genres
-exports.genre_list=(req,res)=>{
-    res.send(`List of all genres`)
+exports.genre_list=(req,res,next)=>{
+    Genre.find().sort([['name','ascending']]).exec(function(err,list_of_genres){
+        //If an error occurs pass the error to be handled by express
+        if(err)
+        {
+            next(err)
+        }
+        res.render('genreList',{
+            title:'Genre List',
+            genre_list:list_of_genres
+        })
+    })
 }
 //Display the details of a genre
 exports.genre_detail=(req,res)=>{

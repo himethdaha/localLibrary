@@ -1,0 +1,12 @@
+extend layout 
+
+block content 
+    h1= title 
+    p All the genres u want 
+
+    ul 
+        each genre in genre_list
+            li 
+                a(href=genre.url) #{genre.name}
+        else 
+            li No genres to be found
