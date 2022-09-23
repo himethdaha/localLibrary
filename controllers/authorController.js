@@ -7,7 +7,7 @@ exports.author_list = (req,res,next)=>{
         //If an error occurs pass the error to express
         if(err)
         {
-            next(err)
+            return next(err)
         }
         res.render('authorList', {
             title:'Author List',

@@ -5,6 +5,7 @@ const Genre = require('../models/genre')
 
 const async = require('async')
 const bookinstance = require('../models/bookInstance')
+const book = require('../models/book')
 
 //Will be the sites Index page
 exports.index=(req,res)=>{
@@ -58,8 +59,36 @@ exports.book_list=(req,res,next)=>{
     })
 }
 //Display the details of an book
-exports.book_detail=(req,res)=>{
-    res.send(`Details of book with the ID of ${req.params.id}`)
+exports.book_detail=(req,res,next)=>{
+    async.parallel({
+        //Find the book by id and populate the author and genre instead of just the ids
+        book(callback){
+            Book.findById(req.params.id).populate("author").populate("genre").exec(callback)
+        },
+        bookInstances(callback){
+            BookInstance.find({book:req.params.id}).exec(callback)
+        }
+    },
+    (err,results)=>{
+        //If an error occurs pass it to express
+        if(err)
+        {
+            return next(err)
+        }
+        if(results.book === null)
+        {
+            const err = new Error(`No books found`)
+            err.status = 404
+            return next(err)
+        }
+        res.render('bookDetails',{
+            title:results.book.title,
+            book:results.book,
+            bookInstances:results.bookInstances
+        })
+
+    }
+    )
 }
 //Display book create form
 exports.book_create_get=(req,res)=>{

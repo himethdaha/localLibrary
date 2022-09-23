@@ -8,7 +8,7 @@ exports.genre_list=(req,res,next)=>{
         //If an error occurs pass the error to be handled by express
         if(err)
         {
-            next(err)
+            return next(err)
         }
         res.render('genreList',{
             title:'Genre List',
@@ -33,7 +33,7 @@ exports.genre_detail=(req,res)=>{
         //If an error occurs pass it to express
         if(err)
         {
-            next(err)
+            return next(err)
         }
         //If no genre was found
         if(results.genre===null)
