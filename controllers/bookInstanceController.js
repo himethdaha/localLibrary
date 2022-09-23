@@ -1,8 +1,22 @@
+const Book = require('../models/book')
 const BookInstance = require('../models/bookInstance')
+const Author = require('../models/author')
+const Genre = require('../models/genre')
 
 //Display the list of all book instances
-exports.bookInstance_list=(req,res)=>{
-    res.send(`List of all book instances`)
+exports.bookInstance_list=(req,res,next)=>{
+    //Find all book instances and populate the book id with actual data
+    BookInstance.find().populate("book").exec((err,list_of_bookInstances)=>{
+        //If an error occurs pass the error to express
+        if(err)
+        {
+         return next(err)
+        }
+        res.render("bookInstance",{
+            title:"All Book Copies",
+            bookListInstances:list_of_bookInstances
+        })
+    })
 }
 //Display the details of a bookinstance
 exports.bookInstance_detail=(req,res)=>{

@@ -1,0 +1,21 @@
+extends layout 
+
+block content 
+    h1=title 
+    p All book Copies will be found here 
+
+    ul 
+        each bookInstance in bookListInstances
+         li 
+            a(href="bookInstance.url") #{bookInstance.book.title}: #{bookInstance.imprint}
+            if bookInstance.status==='Available'
+                span.text-success #{bookInstance.status}
+            else if bookInstance.status==='Maintenance'
+                span.text-danger #{bookInstance.status}
+            else 
+                span.text-warning #{bookInstance.status}
+            if bookInstance.status!=='Available'
+                span        (Due:#{bookInstance.due_back_formatted} )
+
+        else 
+            li There are no copies of books left

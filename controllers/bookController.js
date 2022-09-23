@@ -52,7 +52,7 @@ exports.book_list=(req,res,next)=>{
         //If an error occurs pass it to express 
         if(err)
         {
-            next(err)
+            return next(err)
         }
         res.render("bookList",{title:"Book List",book_list:list_of_books})
     })

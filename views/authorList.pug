@@ -1,0 +1,13 @@
+extend layout 
+
+block content 
+    h1= title 
+    p Our list of authors 
+
+    ul 
+      each author in author_list
+        li 
+            a(href=author.url) #{`${author.first_name} ${author.family_name}`} 
+            |  DOB: (#{author.date_of_birth_formatted})  / DOD: (#{author.date_of_death_formatted})
+      else 
+        li No authors found

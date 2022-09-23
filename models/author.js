@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const {DateTime} = require('luxon')
 
 const Schema = mongoose.Schema
 
@@ -31,4 +32,13 @@ authorSchema.virtual("url").get(function(){
     return `catalog/author/${this._id}`
 })
 
+authorSchema.virtual("date_of_birth_formatted").get(function(){
+    //If dob is not found return an empty string if not return dob 
+    return this.date_of_birth? DateTime.fromJSDate(this.date_of_birth).toLocaleString(DateTime.DATE_MED):''
+})
+
+authorSchema.virtual("date_of_death_formatted").get(function(){
+    //If dod is not found return an empty string if not return dod
+    return this.date_of_death?DateTime.fromJSDate(this.date_of_death).toLocaleString(DateTime.DATE_MED):''
+})
 module.exports = mongoose.model('Author',authorSchema)
