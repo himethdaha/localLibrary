@@ -1,7 +1,9 @@
 const Genre = require('../models/genre')
 const Book = require('../models/book')
 const async = require('async')
-const mongoose = require('mongoose')
+const {body, validationResult} = require('express-validator')
+
+
 //Display the list of all genres
 exports.genre_list=(req,res,next)=>{
     Genre.find().sort([['name','ascending']]).exec(function(err,list_of_genres){
@@ -54,12 +56,65 @@ exports.genre_detail=(req,res)=>{
 }
 //Display genre create form
 exports.genre_create_get=(req,res)=>{
-    res.send(`Genre create form GEt`)
+    res.render("genreCreate_form",{title:'Create Genre'})
 }
 //Handle genre create form
-exports.genre_create_post=(req,res)=>{
-    res.send(`Genre create form POST`)
-}
+//Route is passed an array of middlewares
+exports.genre_create_post=[
+    //Validate and sanitize the field
+    body("name", "Genre name is required").trim().isLength({min:1}).escape(),
+
+    //Process the request after validating and sanitization
+    (req,res,next)=>{
+        //Extract validation errors from the request
+        const errors = validationResult(req)
+
+        //Object with the sanitized genre name
+        const genre = new Genre({name:req.body.name})
+
+        //If there are errors render the form again
+        if(!errors.isEmpty())
+        {
+            res.render("genreCreate_form",{
+                title:'Create Genre',
+                genre,
+                //To loop over the errors in the view
+                errors:errors.array()
+            })
+            return
+        }
+        else
+        {
+            //If there are no errors
+            //Check if the genre already exists
+            Genre.findOne({name:req.body.name}).exec((err,genre_found)=>{
+                //If an error is found pass it to express
+                if(err)
+                {
+                    return next(err)
+                }
+
+                //If the genre is found redirect the user to the genreDetails
+                if(genre_found)
+                {
+                    res.redirect(genre_found.url)
+                }
+                //If no errors and no genre found save the new genre
+                else
+                {
+                    genre.save((err)=>{
+                        if(err)
+                        {
+                            return next(err)
+                        }
+                        //Genre is saved and redirect the user to the details page of the genre
+                        res.redirect(genre.url)
+                    })
+                }
+            })
+        }
+    }
+]
 //Display genre delete form
 exports.genre_delete_get=(req,res)=>{
     res.send(`Genre delete form GET`)
