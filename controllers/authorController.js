@@ -2,6 +2,7 @@ const Author = require("../models/author")
 const Book = require("../models/book")
 const async = require('async')
 const book = require("../models/book")
+const {body,validationResult} = require("express-validator")
 
 //Display the list of all authors
 exports.author_list = (req,res,next)=>{
@@ -52,12 +53,60 @@ exports.author_detail=(req,res,next)=>{
 }
 //Display author create form
 exports.author_create_get=(req,res)=>{
-    res.send(`Author create form GET`)
+    res.render('authorCreate_form', {
+        title:'Author Create'
+    })
 }
 //Handle author create form
-exports.author_create_post=(req,res)=>{
-    res.send(`Author create form POST`)
-}
+exports.author_create_post=[
+    //Validate and sanitize the first name
+    body("first_name").trim().isLength({min:2}).escape().withMessage("First name is required with at least 2 characters"),
+    //Validate and sanitize the family name
+    body("family_name").trim().isLength({min:1}).escape().withMessage("Family name is required"),
+    //Validate and sanitize the date of birth
+    //Checkfalsy accepts a null/empty string
+    body("date_of_birth", "Invalid date entered").optional({checkFalsy:true}).isISO8601().toDate().trim(),
+    //Validate and sanitize the date of death
+    //Checkfalsy accepts a null/empty string
+    body("date_of_death", "Invalid date entered").optional({checkFalsy:true}).isISO8601().toDate().trim(),
+
+    (req,res,next)=>{
+        //Get the errors through the request body
+        const errors = validationResult(req)
+
+        //Create an author object from the validated and sanitized date 
+        const author = new Author({
+            first_name:req.body.first_name,
+            family_name:req.body.family_name,
+            date_of_birth:req.body.date_of_birth,
+            date_of_death:req.body.date_of_death
+        })
+        
+        //If errors were found in the request body pass the errors to the form
+        if(!errors.isEmpty())
+        {
+            res.render("authorCreate_form",
+            {
+                title: "Author Create",
+                author,
+                errors:errors.array()
+            })
+        }
+
+        //If the date is valid, save to the database
+        author.save((err)=>{
+            //If errors were found pass it to express
+            if(err)
+            {
+                return next(err)
+            }
+            //Redirect to the new created author details page
+            res.redirect(author.url)
+
+        })
+    }
+
+]
 //Display author delete form
 exports.author_delete_get=(req,res)=>{
     res.send(`Author delete form GET`)
