@@ -208,12 +208,69 @@ exports.book_create_post=[
 
 ]
 //Display book delete form
-exports.book_delete_get=(req,res)=>{
-    res.send(`book delete form GET`)
+exports.book_delete_get=(req,res,next)=>{
+    async.parallel({
+        book(callback)
+        {
+            Book.findById(req.params.id).exec(callback)
+        },
+        bookInstances(callback)
+        {
+            BookInstance.find({book:req.params.id}).exec(callback)
+        },
+    },
+     (err,results)=>{
+        if(err)
+        {
+            return next(err)
+        }
+        if(results.book == null)
+        {
+            res.redirect('/catalog/books')
+        }
+        res.render('bookDelete_form',{
+            title:'Delete Book',
+            book:results.book,
+            bookInstances:results.bookInstances,
+        })
+     }
+    )
 }
 //Handle book delete form
-exports.book_delete_post=(req,res)=>{
-    res.send(`book delete form POST`)
+exports.book_delete_post=(req,res,next)=>{
+    async.parallel({
+        book(callback)
+        {
+            Book.findById(req.params.id).exec(callback)
+        },
+        bookInstances(callback)
+        {
+            BookInstance.find({book:req.params.id}).exec(callback)
+        }
+    },
+    (err,results)=>{
+        if(err)
+        {
+            return next(err)
+        }
+        if(results.bookInstances.length > 0)
+        {
+            res.render('bookDelete_form',{
+                title:'Delete Book',
+                book:results.book,
+                bookInstances:results.bookInstances
+            })
+            return
+        }
+        Book.findByIdAndDelete(results.book._id,(err)=>{
+            if(err)
+            {
+                return next(err)
+            }
+            res.redirect('/catalog/books')
+        })
+    }
+    )
 }
 //Display book update form
 exports.book_update_get=(req,res)=>{
