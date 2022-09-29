@@ -108,12 +108,85 @@ exports.author_create_post=[
 
 ]
 //Display author delete form
-exports.author_delete_get=(req,res)=>{
-    res.send(`Author delete form GET`)
+exports.author_delete_get=(req,res,next)=>{
+    //Find author and books in parallel
+    async.parallel({
+        //Find the author through the id passed in the url parameter
+        author(callback)
+        {
+            Author.findById(req.params.id).exec(callback)
+        },
+        books(callback)
+        {
+            //Get the books that reference author
+            Book.find({author:req.params.id}).exec(callback)
+        }
+    },
+    (err,results)=>{
+        if(err)
+        {
+            return next(err)
+        }
+        //If the request was valid but couldn't find an author
+        if(results.author == null)
+        {
+            res.redirect('/catalog/authors')
+        }
+
+        res.render('authorDelete_form',{
+            title:'Delete Author',
+            author:results.author,
+            books:results.books
+        })
+    }
+    )
 }
 //Handle author delete form
-exports.author_delete_post=(req,res)=>{
-    res.send(`Author delete form POST`)
+exports.author_delete_post=(req,res,next)=>{
+    //Find the books referencing the author
+    async.parallel({
+        //Find the author through the id passed in the url parameter
+        author(callback)
+        {
+            Author.findById(req.params.id).exec(callback)
+        },
+        //Find author and books in parallel
+        books(callback)
+        {
+            Book.find({author:req.params.id}).exec(callback)
+        }
+
+    },
+    (err,results)=>{
+        if(err)
+        {
+            return next(err)
+        }
+
+        //If the request was succesful books were found
+        if(results.books.length > 0)
+        {
+            res.render('authorDelete_form', {
+                title: 'Delete Author',
+                author:results.author,
+                books:results.books
+            })
+            //End cycle
+            return
+        }
+
+        //If author has no books, delete the author
+        Author.findByIdAndDelete(results.author._id, (err)=>{
+            if(err)
+            {
+                return next(err)
+            }
+            res.redirect('/catalog/authors')
+        })
+
+    }
+    )
+   
 }
 //Display author update form
 exports.author_update_get=(req,res)=>{
