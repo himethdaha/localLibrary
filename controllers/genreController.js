@@ -116,12 +116,75 @@ exports.genre_create_post=[
     }
 ]
 //Display genre delete form
-exports.genre_delete_get=(req,res)=>{
-    res.send(`Genre delete form GET`)
+exports.genre_delete_get=(req,res,next)=>{
+    async.parallel({
+        genre(callback)
+        {
+            Genre.findById(req.params.id).exec(callback)
+        },
+        //FInd the books referencing the genre
+        genre_books(callback)
+        {
+            Book.find({genre:req.params.id}).exec(callback)
+        }
+    },
+    (err,results)=>{
+        //If an error occurs pass it to express
+        if(err)
+        {
+            return next(err)
+        }
+        //If the request was valid but couldn't find any genres in the db
+        if(results.genre == null)
+        {
+            res.redirect('/catalog/genres')
+        }
+        res.render('genreDelete_form',{
+            title:'Delete Genre',
+            genre:results.genre,
+            books:results.genre_books
+        })
+    }
+    )
 }
 //Handle genre delete form
-exports.genre_delete_post=(req,res)=>{
-    res.send(`Genre delete form POST`)
+exports.genre_delete_post=(req,res,next)=>{
+    async.parallel({
+        genre(callback)
+        {
+            Genre.findById(req.params.id).exec(callback)
+        },
+        genre_books(callback)
+        {
+            Book.find({genre:req.params.id}).exec(callback)
+        }
+    },
+    (err,results)=>{
+        if(err)
+        {
+            return next(err)
+        }
+        //If books were referencing the genre, render the form and end cycle
+        if(results.genre_books.length > 0)
+        {
+            res.render('genreDelete_form',{
+                title:'Delete Genre',
+                genre:results.genre,
+                books:results.genre_books
+            })
+
+            return
+        }
+
+        Genre.findByIdAndDelete(results.genre._id,(err)=>{
+            if(err)
+            {
+                return next(err)
+            }
+            res.redirect('/catalog/genres')
+        })
+    }
+    )
 }
 //Display genre update form
 exports.genre_update_get=(req,res)=>{
