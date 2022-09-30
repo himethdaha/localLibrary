@@ -130,12 +130,38 @@ exports.bookInstance_create_post=[
     }
 ]
 //Display bookinstance delete form
-exports.bookInstance_delete_get=(req,res)=>{
-    res.send(`bookinstance delete form GET`)
+exports.bookInstance_delete_get=(req,res,next)=>{
+    BookInstance.findById(req.params.id).exec((err,bookInstance)=>{
+        if(err)
+        {
+            return next(err)
+        }
+        // if(bookInstance==null)
+        // {
+        //     res.redirect('/catalog/bookInstances')
+        // }
+        res.render('bookInstanceDelete_form',{
+            title:'Delete BookInstance',
+            bookInstance:bookInstance
+        })
+    })
 }
 //Handle bookinstance delete form
-exports.bookInstance_delete_post=(req,res)=>{
-    res.send(`bookinstance delete form POST`)
+exports.bookInstance_delete_post=(req,res,next)=>{
+    BookInstance.findById(req.params.id).exec((err,bookInstance)=>{
+        if(err)
+        {
+            return next(err)
+        }
+        BookInstance.findByIdAndDelete(req.params.id,(err)=>{
+            if(err)
+            {
+                return next(err)
+            }
+            res.redirect('/catalog/bookInstances')
+        })
+        
+    })
 }
 //Display bookinstance update form
 exports.bookInstance_update_get=(req,res)=>{
