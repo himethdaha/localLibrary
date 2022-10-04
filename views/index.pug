@@ -2,18 +2,25 @@ extends layout
 
 block content
   h1= title
-  p Welcome to #[em LocalLibrary], hope you have an amazing read! 
+  if user
+    p Welcome to #[em LocalLibrary] #[strong #{user.username}!!], hope you have an amazing read! 
 
-  h1 Catalog Counts 
+    h1 Catalog Counts 
 
-  if error 
-    p Error getting catalog counts 
+    if error 
+      p Error getting catalog counts 
+    else 
+      p The library has the following records 
+
+      ul 
+        li #[strong Books:] !{data.book_count}
+        li #[strong Book Copies:] !{data.bookInstance_count}
+        li #[strong Copies Available:] !{data.bookinstance_available_count}
+        li #[strong Authors:] !{data.author_count}
+        li #[strong Genres:] !{data.genre_count}
+    
+    a(href='/users/logout') LogOut
+  
   else 
-    p The library has the following records 
+    a(href='/users/login') LogIn
 
-    ul 
-      li #[strong Books:] !{data.book_count}
-      li #[strong Book Copies:] !{data.bookInstance_count}
-      li #[strong Copies Available:] !{data.bookinstance_available_count}
-      li #[strong Authors:] !{data.author_count}
-      li #[strong Genres:] !{data.genre_count}

@@ -42,7 +42,8 @@ exports.index=(req,res)=>{
             res.render('index',{
                 title:'Welcome to the Local Library Home',
                 error:err,
-                data:results
+                data:results,
+                user:req.user
             })
         }
     )

@@ -1,0 +1,21 @@
+extends layout 
+
+block content 
+
+    h1 #{title}
+
+    form(action='' method='POST')
+        label(for='username') Username
+        br
+        input(name='username' placeholder='username' type='text' required='true')
+        br
+        label(for='password') Password
+        br
+        input(name='password' type='password' required='true')
+        br
+        br
+        button.btn.btn-primary(type='submit') Submit
+
+    if errors
+        each error in errors 
+            p #{error.msg}

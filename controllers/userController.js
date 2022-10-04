@@ -1,5 +1,11 @@
 const User = require('../models/user')
+const Book = require('../models/book')
+
 const {body,validationResult} = require('express-validator')
+const session = require('express-session')
+const passport = require('passport')
+const LocalStrategy = require('passport-local').Strategy
+
 
 //User Sign up
 exports.signup_get=(req,res,next)=>{
@@ -39,9 +45,67 @@ exports.signup_post=[
             {
                 return next(err)
             }
-                res.redirect('/')
+                res.redirect('/login')
         })
         
     }
 
 ]
+
+
+
+exports.login_get=(req,res,next)=>{
+    res.render('userLogIn_form',{
+        title:'User LogIn Form'
+    })
+}
+
+
+//For user Authentication
+passport.use(
+    new LocalStrategy((username, password, done) => {
+      User.findOne({ username: username }, (err, user) => {
+        if (err) { 
+          return done(err);
+        }
+        if (!user) {
+          return done(null, false, { message: "Incorrect username" });
+        }
+        if (user.password !== password) {
+          return done(null, false, { message: "Incorrect password" });
+        }
+        return done(null, user);
+      });
+    })
+  );
+
+  passport.serializeUser(function(user, done) {
+    done(null, user.id);
+  });
+  
+  passport.deserializeUser(function(id, done) {
+    User.findById(id, function(err, user) {
+      done(err, user);
+    });
+  });
+
+exports.login_post=[
+    passport.authenticate('local',{
+        failureRedirect:'/users/login', 
+        failureMessage:true,
+        successRedirect:'/'
+    })
+]
+
+//User logout
+exports.logout=(req,res,next)=>{
+    req.logout((err)=>{
+        if(err)
+        {
+            return next(err)
+        }
+        res.redirect('/')
+    })
+    
+}
+   
