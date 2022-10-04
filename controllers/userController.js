@@ -5,7 +5,7 @@ const {body,validationResult} = require('express-validator')
 const session = require('express-session')
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
-
+const bcrypt = require('bcryptjs')
 
 //User Sign up
 exports.signup_get=(req,res,next)=>{
@@ -21,12 +21,15 @@ exports.signup_post=[
     (req,res,next)=>{
         //Save errors in a variable
         const errors = validationResult(req)
+    
 
         //Create a user object
         const user = new User({
             username:req.body.username,
             password:req.body.password
         });
+        
+        
 
         //If errors are present re-render form with errors
         if(!errors.isEmpty())
@@ -45,7 +48,7 @@ exports.signup_post=[
             {
                 return next(err)
             }
-                res.redirect('/login')
+                res.redirect('/')
         })
         
     }
@@ -64,17 +67,20 @@ exports.login_get=(req,res,next)=>{
 //For user Authentication
 passport.use(
     new LocalStrategy((username, password, done) => {
-      User.findOne({ username: username }, (err, user) => {
+      User.findOne({ username: username }, async(err, user) => {
         if (err) { 
           return done(err);
         }
         if (!user) {
-          return done(null, false, { message: "Incorrect username" });
+          return done(null, false, { message: "Incorrect Password or Username" });
         }
-        if (user.password !== password) {
-          return done(null, false, { message: "Incorrect password" });
-        }
-        return done(null, user);
+       if(await user.comparePassword(password, user.password)){
+            return done(null, user);
+       }
+       else
+       {
+        return done(null,false,{message:"Incorrect Password or Username"});
+       }
       });
     })
   );
