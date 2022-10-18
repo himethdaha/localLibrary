@@ -17,7 +17,8 @@ const app = express();
 dotenv.config({path: './config.env'})
 
 //Database url in atlas
-const mongoDB = 'mongodb+srv://Himeth:NB5rMMU8baZ5r0wn@cluster0.sesod7i.mongodb.net/?retryWrites=true&w=majority'
+const mongoDB = process.env.DB.replace('<password>',process.env.DB_PASSWORD)
+
 //Connect with mongoose
 mongoose.connect(mongoDB,{
   useNewUrlParser:true,
